@@ -1,4 +1,5 @@
 import { ref, computed } from 'vue'
+import { refDebounced } from '@vueuse/core'
 import { invoke } from '@tauri-apps/api/core'
 import { open } from '@tauri-apps/plugin-dialog'
 import type { Addon, InstalledAddon, AddonWithStatus } from '../types/addon'
@@ -6,6 +7,7 @@ import type { Addon, InstalledAddon, AddonWithStatus } from '../types/addon'
 const addons = ref<Addon[]>([])
 const installedAddons = ref<InstalledAddon[]>([])
 const searchQuery = ref('')
+const debouncedQuery = refDebounced(searchQuery, 300)
 const loading = ref(false)
 const error = ref<string | null>(null)
 const wowPath = ref<string | null>(null)
@@ -26,8 +28,8 @@ export function useAddons() {
   })
 
   const filteredAddons = computed(() => {
-    if (!searchQuery.value) return addonsWithStatus.value
-    const query = searchQuery.value.toLowerCase()
+    if (!debouncedQuery.value) return addonsWithStatus.value
+    const query = debouncedQuery.value.toLowerCase()
     return addonsWithStatus.value.filter(
       addon =>
         addon.name.toLowerCase().includes(query) ||
