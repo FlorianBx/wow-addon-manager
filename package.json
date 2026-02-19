@@ -5,7 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "CI=false npx tauri build",
+    "build": "vue-tsc -b && vite build",
+    "build:windows": "CI=false npx tauri build --target x86_64-pc-windows-msvc",
+    "build:macos": "CI=false npx tauri build --target aarch64-apple-darwin",
+    "build:linux": "CI=false npx tauri build --target x86_64-unknown-linux-gnu",
     "preview": "vite preview",
     "tauri": "tauri"
   },
