@@ -3,6 +3,7 @@ import { onMounted, ref } from 'vue'
 import SearchBar from './components/SearchBar.vue'
 import AddonList from './components/AddonList.vue'
 import { useAddons } from './composables/useAddons'
+import { useAppUpdate } from './composables/useAppUpdate'
 
 const {
   addons, searchQuery, loading, error,
@@ -10,15 +11,32 @@ const {
   installAddon, uninstallAddon, pickWowPath,
 } = useAddons()
 
+const {
+  updateAvailable, updateVersion, updating, updateError,
+  checkForUpdate, installUpdate, dismissUpdate,
+} = useAppUpdate()
+
 const pathBarOpen = ref(false)
 
 onMounted(() => {
   initialize()
+  checkForUpdate()
 })
 </script>
 
 <template>
   <div class="app">
+    <div v-if="updateAvailable" class="update-banner">
+      <span v-if="!updating">
+        Version <strong>{{ updateVersion }}</strong> available
+      </span>
+      <span v-else>Updating...</span>
+      <span v-if="updateError" class="update-error">{{ updateError }}</span>
+      <div v-if="!updating" class="update-actions">
+        <button class="btn-update" @click="installUpdate">Update & Restart</button>
+        <button class="btn-dismiss" @click="dismissUpdate">Later</button>
+      </div>
+    </div>
     <header class="header">
       <h1>Skyliss - Addon Manager</h1>
       <div class="path-row">
@@ -29,7 +47,7 @@ onMounted(() => {
           </div>
           <div v-else class="path-info path-missing">
             <span class="path-label">No AddOns folder configured</span>
-          </div>
+          </div>  
         </div>
         <button class="btn-toggle-path" @click="pathBarOpen = !pathBarOpen">
           Game Path
@@ -221,5 +239,59 @@ onMounted(() => {
   border-radius: 8px;
   color: #ef4444;
   font-size: 0.9rem;
+}
+
+.update-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 1.25rem;
+  background: rgba(100, 108, 255, 0.12);
+  border-bottom: 1px solid rgba(100, 108, 255, 0.3);
+  font-size: 0.85rem;
+  color: #c4c7ff;
+}
+
+.update-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+.btn-update {
+  padding: 0.3rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  background: #646cff;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.btn-update:hover {
+  opacity: 0.85;
+}
+
+.btn-dismiss {
+  padding: 0.3rem 0.75rem;
+  font-size: 0.8rem;
+  background: transparent;
+  color: #888;
+  border: 1px solid #3a3a3a;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.btn-dismiss:hover {
+  border-color: #646cff;
+  color: #fff;
+}
+
+.update-error {
+  color: #ef4444;
+  font-size: 0.8rem;
 }
 </style>
